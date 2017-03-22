@@ -12,6 +12,17 @@
 var exec = require('cordova/exec');
 var emptyFnc = function(){};
 
+var listeners = [];
+
+var fireListeners = action => {
+    for (var i = 0; i < listeners.length; ++i) {
+        var listener = listeners[i];
+        if (listener.name === action.name) {
+            listener.callback(action);
+        }
+    }
+};
+
 var backgroundGeolocation = {
 
     /**
@@ -65,7 +76,7 @@ var backgroundGeolocation = {
     },
 
     changePace: function(mode, success, failure) {
-        console.log('[Warning]: changePace is deprecated. Use switchMode instead.')
+        console.log('[Warning]: changePace is deprecated. Use switchMode instead.');
         this.switchMode(mode, success, failure);
     },
 
@@ -183,7 +194,7 @@ var backgroundGeolocation = {
     },
 
     deleteAllLocations: function(success, failure) {
-        console.log('[Warning]: deleteAllLocations is deprecated and will be removed in future versions.')
+        console.log('[Warning]: deleteAllLocations is deprecated and will be removed in future versions.');
         exec(success || emptyFnc,
             failure || emptyFnc,
             'BackgroundGeolocation',
@@ -195,6 +206,19 @@ var backgroundGeolocation = {
             failure || emptyFnc,
             'BackgroundGeolocation',
             'getLogEntries', [limit]);
+    },
+    
+    on: function(eventName, callback) {
+        var isFirstListener = !listeners.length;
+        
+        listeners.push({
+            name: eventName,
+            callback: callback
+        });
+        
+        if (isFirstListener) {
+            exec(fireListeners, fireListeners, 'BackgroundGeolocation', 'listenForEvents', []);
+        }
     }
 };
 

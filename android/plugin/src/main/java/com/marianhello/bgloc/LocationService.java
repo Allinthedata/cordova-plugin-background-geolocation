@@ -93,6 +93,11 @@ public class LocationService extends Service {
      * any registered clients whenever the clients want to change provider operation mode
      */
     public static final int MSG_SWITCH_MODE = 6;
+    
+    /**
+     * Command sent by the service to any registered clients when a notification action is triggered
+     */
+    public static final int MSG_ACTION_FIRED = 7;
 
 
     /** background operation mode of location provider */
@@ -100,6 +105,8 @@ public class LocationService extends Service {
 
     /** foreground operation mode of location provider */
     public static final int FOREGROUND_MODE = 1;
+    
+    public static final String EVENT_NOTIFICATION_ACTION_FIRED = "com.marianhello.bgloc.eventNotificationFired";
 
     private static final int ONE_MINUTE = 1000 * 60;
     private static final int FIVE_MINUTES = 1000 * 60 * 5;
@@ -178,6 +185,7 @@ public class LocationService extends Service {
                 AuthenticatorService.getAccount(getStringResource(Config.ACCOUNT_TYPE_RESOURCE)));
 
         registerReceiver(connectivityChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver(notificationActionReceiver, new IntentFilter(LocationService.EVENT_NOTIFICATION_ACTION_FIRED));
     }
 
     @Override
@@ -259,6 +267,15 @@ public class LocationService extends Service {
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent contentIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setContentIntent(contentIntent);
+            
+            if (config.getNotificationActionName() != null) {
+                Intent broadcastIntent = new Intent(EVENT_NOTIFICATION_ACTION_FIRED);
+                
+                PendingIntent actionIntent = PendingIntent.getBroadcast(context, 1, broadcastIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                NotificationCompat.Action.Builder actionBuilder = new NotificationCompat.Action.Builder(0, config.getNotificationActionName(), actionIntent);
+                
+                builder.addAction(actionBuilder.build());
+            }
 
             Notification notification = builder.build();
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
@@ -488,6 +505,19 @@ public class LocationService extends Service {
             log.info("Network condition changed hasConnectivity: {}", hasConnectivity);
         }
     };
+    
+    private BroadcastReceiver notificationActionReceiver = new BroadcastReceiver() {
+        private static final String LOG_TAG = "NotificationActionReceiver";
+       
+        @Override
+        pubilc void onReceive(Context context, Intent intent) {
+            Bundle extras = intent.getExtras();
+            Message msg = Message.obtain(null, MSG_ACTION_FIRED);
+            msg.setData(extras);
+
+            sendClientMessage(msg);
+        }
+    }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager cm =

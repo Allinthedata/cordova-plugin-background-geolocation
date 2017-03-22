@@ -43,6 +43,7 @@ public class Config implements Parcelable
     private String notificationIconLarge;
     private String notificationIconSmall;
     private String notificationIconColor;
+    private String notificationActionName;
     private Integer locationProvider = ANDROID_DISTANCE_FILTER_PROVIDER;
     private Integer interval = 600000; //milliseconds
     private Integer fastestInterval = 120000; //milliseconds
@@ -75,6 +76,7 @@ public class Config implements Parcelable
         out.writeString(getLargeNotificationIcon());
         out.writeString(getSmallNotificationIcon());
         out.writeString(getNotificationIconColor());
+        out.writeString(getNotificationActionName());
         out.writeValue(getStopOnTerminate());
         out.writeValue(getStartOnBoot());
         out.writeValue(getStartForeground());
@@ -113,6 +115,7 @@ public class Config implements Parcelable
         setLargeNotificationIcon(in.readString());
         setSmallNotificationIcon(in.readString());
         setNotificationIconColor(in.readString());
+        setNotificationActionName(in.readString());
         setStopOnTerminate((Boolean) in.readValue(null));
         setStartOnBoot((Boolean) in.readValue(null));
         setStartForeground((Boolean) in.readValue(null));
@@ -181,6 +184,14 @@ public class Config implements Parcelable
 
     public String getNotificationText() {
         return notificationText;
+    }
+    
+    public String getNotificationActionName() {
+        return notificationActionName;
+    }
+    
+    public void setNotificationActionName(String notificationActionName) {
+        this.notificationActionName = notificationActionName;
     }
 
     public void setNotificationText(String notificationText) {
@@ -328,7 +339,7 @@ public class Config implements Parcelable
     public void setMaxLocations(Integer maxLocations) {
         this.maxLocations = maxLocations;
     }
-
+    
     @Override
     public String toString () {
         return new StringBuffer()
@@ -349,6 +360,7 @@ public class Config implements Parcelable
                 .append(" nIconLarge=").append(getLargeNotificationIcon())
                 .append(" nIconSmall=").append(getSmallNotificationIcon())
                 .append(" nIconColor=").append(getNotificationIconColor())
+                .append(" nActionName=").append(getNotificationActionName())
                 .append(" url=").append(getUrl())
                 .append(" syncUrl=").append(getSyncUrl())
                 .append(" syncThreshold=").append(getSyncThreshold())
@@ -380,6 +392,7 @@ public class Config implements Parcelable
         config.setDebugging(jObject.optBoolean("debug", config.isDebugging()));
         config.setNotificationTitle(jObject.optString("notificationTitle", config.getNotificationTitle()));
         config.setNotificationText(jObject.optString("notificationText", config.getNotificationText()));
+        config.setNotificationActionName(jObject.optString("notificationActionName", config.getNotificationActionName()));
         config.setStopOnTerminate(jObject.optBoolean("stopOnTerminate", config.getStopOnTerminate()));
         config.setStartOnBoot(jObject.optBoolean("startOnBoot", config.getStartOnBoot()));
         config.setLocationProvider(jObject.optInt("locationProvider", config.getLocationProvider()));
@@ -411,6 +424,7 @@ public class Config implements Parcelable
         json.put("notificationIconLarge", getLargeNotificationIcon());
         json.put("notificationIconSmall", getSmallNotificationIcon());
         json.put("notificationIconColor", getNotificationIconColor());
+        json.put("notificationActionName", getNotificationActionName());
         json.put("stopOnTerminate", getStopOnTerminate());
         json.put("startOnBoot", getStartOnBoot());
         json.put("startForeground", getStartForeground());

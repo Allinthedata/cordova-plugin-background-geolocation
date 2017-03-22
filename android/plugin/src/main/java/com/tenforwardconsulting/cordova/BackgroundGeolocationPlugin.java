@@ -80,6 +80,7 @@ public class BackgroundGeolocationPlugin extends CordovaPlugin {
     public static final String ACTION_DELETE_ALL_LOCATIONS = "deleteAllLocations";
     public static final String ACTION_GET_CONFIG = "getConfig";
     public static final String ACTION_GET_LOG_ENTRIES = "getLogEntries";
+    public static final String ACTION_LISTEN_FOR_EVENTS = "listenForEvents";
 
     public static final int START_REQ_CODE = 0;
     public static final int PERMISSION_DENIED_ERROR_CODE = 2;
@@ -96,6 +97,7 @@ public class BackgroundGeolocationPlugin extends CordovaPlugin {
     private ArrayList<CallbackContext> stationaryContexts = new ArrayList<CallbackContext>();
     private CallbackContext actionStartCallbackContext;
     private CallbackContext locationModeChangeCallbackContext;
+    private CallbackContext eventCallbackContext;
     private ExecutorService executorService;
     private BackgroundLocation stationaryLocation;
 
@@ -163,6 +165,22 @@ public class BackgroundGeolocationPlugin extends CordovaPlugin {
                         callbackContext.sendPluginResult(result);
                     }
                     break;
+                case LocationService.MSG_ACTION_FIRED:
+                    if (eventCallbackContext != null) {
+                        try {
+                            log.debug("Sending action fired to webview");
+                            JSONObject event = new JSONObject();
+                            event.put("name", "action");
+                            PluginResult result = new PluginResult(PluginResult.Status.OK, event);
+                            result.setKeepCallback(true);
+                            eventCallbackContext.sendPluginResult(result);
+                        } catch (JSONException e) {
+                            log.warn("Error converting message to json");
+                            PluginResult result = new PluginResult(PluginResult.Status.JSON_EXCEPTION);
+                            result.setKeepCallback(true);
+                            eventCallbackContext.sendPluginResult(result);
+                        }
+                    }
                 default:
                     super.handleMessage(msg);
             }
@@ -425,6 +443,9 @@ public class BackgroundGeolocationPlugin extends CordovaPlugin {
                 }
             });
 
+            return true;
+        } else if (ACTION_LISTEN_FOR_EVENTS.equals(action)) {
+            this.eventCallbackContext = callbackContext;
             return true;
         }
 
