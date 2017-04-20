@@ -510,7 +510,7 @@ public class LocationService extends Service {
         private static final String LOG_TAG = "NotificationActionReceiver";
        
         @Override
-        pubilc void onReceive(Context context, Intent intent) {
+        public void onReceive(Context context, Intent intent) {
             Bundle extras = intent.getExtras();
             Message msg = Message.obtain(null, MSG_ACTION_FIRED);
             msg.setData(extras);
