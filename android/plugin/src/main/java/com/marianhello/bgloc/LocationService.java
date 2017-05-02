@@ -517,7 +517,7 @@ public class LocationService extends Service {
 
             sendClientMessage(msg);
         }
-    }
+    };
 
     private boolean isNetworkAvailable() {
         ConnectivityManager cm =
